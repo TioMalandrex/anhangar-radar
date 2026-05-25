@@ -171,11 +171,7 @@ async function importarPlanilha() {
       setStatus(`✗ ${data.error || "Erro ao importar planilha."}`);
       return;
     }
-    let msg = `✓ ${data.importados || 0} registro(s) importado(s) com sucesso.`;
-    if (data.erros_total) {
-      msg += ` (${data.erros_total} linha(s) ignorada(s))`;
-    }
-    setStatus(msg);
+    setStatus(data.message || "✓ Importação concluída.");
     if (data.contador !== undefined) {
       contadorEl.textContent = formatContador(data.contador);
     }

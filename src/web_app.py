@@ -165,7 +165,7 @@ def create_app(excel_path: Optional[Union[Path, str]] = None) -> Flask:
 
         contador_atual = contar_registros_hoje(str(_excel_path()))
         return jsonify(
-            importados=importados,
+            message="✓ Importação concluída.",
             contador=contador_atual,
         )
 
