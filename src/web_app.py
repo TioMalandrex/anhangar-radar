@@ -77,8 +77,11 @@ def create_app(excel_path: Optional[Union[Path, str]] = None) -> Flask:
             return jsonify(error="API key não informada."), 400
         try:
             dados = extrair_dados(texto, api_key)
-        except Exception as exc:
+        except ValueError as exc:
             return jsonify(error=str(exc)), 400
+        except Exception:
+            current_app.logger.exception("Erro ao processar texto via IA.")
+            return jsonify(error="Erro ao chamar a IA."), 500
         return jsonify(dados=dados)
 
     @app.post("/api/salvar")
@@ -101,8 +104,11 @@ def create_app(excel_path: Optional[Union[Path, str]] = None) -> Flask:
 
         try:
             adicionar_linha(str(_excel_path()), dados)
-        except Exception as exc:
-            return jsonify(error=str(exc)), 400
+        except PermissionError as exc:
+            return jsonify(error=str(exc)), 409
+        except Exception:
+            current_app.logger.exception("Erro ao salvar registro.")
+            return jsonify(error="Erro ao salvar o registro."), 500
 
         contador_atual = contar_registros_hoje(str(_excel_path()))
         nome_completo = f'{dados["nome"]} {dados["sobrenome"]}'.strip()
@@ -129,8 +135,11 @@ def create_app(excel_path: Optional[Union[Path, str]] = None) -> Flask:
             importados, erros = importar_planilha(
                 temp_path, str(_excel_path()), api_key
             )
-        except Exception as exc:
+        except ValueError as exc:
             return jsonify(error=str(exc)), 400
+        except Exception:
+            current_app.logger.exception("Erro ao importar planilha.")
+            return jsonify(error="Erro ao importar planilha."), 500
         finally:
             if temp_path and os.path.exists(temp_path):
                 os.unlink(temp_path)
