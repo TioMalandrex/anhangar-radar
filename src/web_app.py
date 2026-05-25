@@ -49,6 +49,22 @@ def _excel_path() -> Path:
     return Path(current_app.config["EXCEL_PATH"])
 
 
+def _mensagem_ia_segura(erro: Exception) -> str:
+    msg = str(erro).lower()
+    if "limite" in msg or "429" in msg:
+        return "Limite de requisições atingido. Aguarde alguns segundos e tente novamente."
+    if "api" in msg and ("inválida" in msg or "invalid" in msg or "401" in msg):
+        return "Chave da API inválida. Verifique sua chave em console.groq.com"
+    return "Erro ao chamar a IA. Verifique a API key e tente novamente."
+
+
+def _mensagem_importacao_segura(erro: Exception) -> str:
+    msg = str(erro).lower()
+    if "não contém dados" in msg or "vazia" in msg:
+        return "A planilha não contém dados válidos."
+    return "Erro ao importar planilha."
+
+
 def create_app(excel_path: Optional[Union[Path, str]] = None) -> Flask:
     app = Flask(
         __name__,
@@ -78,7 +94,7 @@ def create_app(excel_path: Optional[Union[Path, str]] = None) -> Flask:
         try:
             dados = extrair_dados(texto, api_key)
         except ValueError as exc:
-            return jsonify(error=str(exc)), 400
+            return jsonify(error=_mensagem_ia_segura(exc)), 400
         except Exception:
             current_app.logger.exception("Erro ao processar texto via IA.")
             return jsonify(error="Erro ao chamar a IA."), 500
@@ -105,7 +121,10 @@ def create_app(excel_path: Optional[Union[Path, str]] = None) -> Flask:
         try:
             adicionar_linha(str(_excel_path()), dados)
         except PermissionError as exc:
-            return jsonify(error=str(exc)), 409
+            return jsonify(
+                error="O arquivo 'contatos.xlsx' está aberto em outro programa. "
+                "Feche o Excel e tente novamente."
+            ), 409
         except Exception:
             current_app.logger.exception("Erro ao salvar registro.")
             return jsonify(error="Erro ao salvar o registro."), 500
@@ -136,7 +155,7 @@ def create_app(excel_path: Optional[Union[Path, str]] = None) -> Flask:
                 temp_path, str(_excel_path()), api_key
             )
         except ValueError as exc:
-            return jsonify(error=str(exc)), 400
+            return jsonify(error=_mensagem_importacao_segura(exc)), 400
         except Exception:
             current_app.logger.exception("Erro ao importar planilha.")
             return jsonify(error="Erro ao importar planilha."), 500
@@ -147,7 +166,7 @@ def create_app(excel_path: Optional[Union[Path, str]] = None) -> Flask:
         contador_atual = contar_registros_hoje(str(_excel_path()))
         return jsonify(
             importados=importados,
-            erros=erros,
+            erros_total=len(erros),
             contador=contador_atual,
         )
 
