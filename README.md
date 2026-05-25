@@ -1,6 +1,6 @@
 # Anhangá Radar
 
-App desktop para registro inteligente de contatos com vereadores durante a prospecção comercial.
+App **web** para registro inteligente de contatos com vereadores durante a prospecção comercial.
 
 Desenvolvido por **[@Jitterkkk](https://github.com/Jitterkkk)** • Instagram: **[@jitterkkk](https://instagram.com/jitterkkk)**
 
@@ -50,21 +50,31 @@ pip install -r requirements.txt
 1. Acesse [console.groq.com](https://console.groq.com) e crie uma conta (gratuita, sem cartão)
 2. No menu lateral, clique em **API Keys**
 3. Clique em **Create API Key**, dê um nome (ex: `anhanga-radar`) e copie o valor gerado
-4. Cole a chave no campo **Chave da API** dentro do app — ela será salva automaticamente para as próximas sessões
+4. Cole a chave no campo **Chave da API** dentro do app
 
 Limites gratuitos: **30 req/min** e **14.400 req/dia** (Llama 3.3 70B).
 
-> A chave fica armazenada localmente em `.config` na raiz do projeto e nunca é enviada ao repositório.
+> Para implantação pública, configure a variável de ambiente `GROQ_API_KEY` no servidor.
+> Opcionalmente, a chave pode ficar armazenada localmente em `.config` na raiz do projeto e nunca é enviada ao repositório.
 
 ---
 
-## Como rodar
+## Como rodar (web)
 
 ```bash
 python main.py
 ```
 
-A janela do **Anhangá Radar** será aberta. Na primeira execução, informe sua chave da API no campo do topo.
+Abra o navegador em **http://localhost:8000**. Na primeira execução, informe sua chave da API no campo do topo (ou configure `GROQ_API_KEY`).
+
+Para publicar em rede/servidor:
+
+```bash
+export GROQ_API_KEY="sua_chave"
+export HOST=0.0.0.0
+export PORT=8000
+python main.py
+```
 
 ---
 
@@ -94,18 +104,22 @@ Visita presencial ao vereador Roberto Dias em Bauru. Número errado no cadastro,
 
 ```
 anhanga-radar/
-├── main.py              # Ponto de entrada — verifica Python e inicia o app
-├── requirements.txt     # Dependências: groq e openpyxl
+├── main.py              # Ponto de entrada — inicia o servidor web
+├── requirements.txt     # Dependências: groq, openpyxl e flask
 ├── .gitignore
 ├── src/
-│   ├── app.py           # Interface gráfica (tkinter)
+│   ├── web_app.py       # Servidor Flask e rotas da API
 │   ├── ia_processor.py  # Integração com a API do Groq (Llama 3.3)
 │   ├── excel_manager.py # Criação e escrita da planilha Excel
 │   └── config.py        # Persistência da API key em .config
+├── web/
+│   ├── templates/       # HTML da interface web
+│   └── static/          # CSS e JS do frontend
 ├── data/
 │   └── contatos.xlsx    # Gerado automaticamente na primeira execução
 └── tests/
-    └── test_excel.py    # Testes do módulo excel_manager
+    ├── test_excel.py    # Testes do módulo excel_manager
+    └── test_web.py      # Testes básicos das rotas web
 ```
 
 ---

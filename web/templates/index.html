@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="pt-br">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Anhangá Radar</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}" />
+  </head>
+  <body>
+    <header class="header">
+      <div class="container header-content">
+        <div>
+          <h1>ANHANGÁ RADAR</h1>
+          <p>Registro inteligente de contatos com vereadores</p>
+        </div>
+        <div class="header-links">
+          <span>github.com/Jitterkkk</span>
+          <span>@jitterkkk</span>
+        </div>
+      </div>
+    </header>
+
+    <main class="container">
+      <section class="card">
+        <h2>Chave da API — console.groq.com</h2>
+        <div class="row">
+          <input id="apiKey" type="password" placeholder="Cole sua API key" />
+          <button id="toggleKey" class="ghost">👁</button>
+        </div>
+        <p class="hint">
+          Para implantação pública, configure a variável de ambiente
+          <strong>GROQ_API_KEY</strong> no servidor.
+        </p>
+      </section>
+
+      <section class="card">
+        <div class="row space-between">
+          <h2>Descrição do contato</h2>
+          <span class="hint">Ctrl+Enter para processar</span>
+        </div>
+        <textarea id="descricao" rows="5" placeholder="Descreva o contato em texto livre..."></textarea>
+        <div class="row end">
+          <button id="processarBtn" class="primary">Processar com IA</button>
+        </div>
+      </section>
+
+      <section class="card">
+        <h2>Dados extraídos — revise antes de salvar</h2>
+        <div class="grid">
+          <label>
+            Nome
+            <input id="nome" type="text" />
+          </label>
+          <label>
+            Sobrenome
+            <input id="sobrenome" type="text" />
+          </label>
+          <label>
+            Cidade
+            <input id="cidade" type="text" />
+          </label>
+          <label>
+            Telefone
+            <input id="telefone" type="text" />
+          </label>
+          <label>
+            Fonte
+            <select id="fonte">
+              {% for fonte in fontes %}
+              <option value="{{ fonte }}">{{ fonte }}</option>
+              {% endfor %}
+            </select>
+          </label>
+          <label>
+            Status
+            <select id="status">
+              {% for status in statuses %}
+              <option value="{{ status }}">{{ status }}</option>
+              {% endfor %}
+            </select>
+          </label>
+        </div>
+        <p id="abaLabel" class="hint"></p>
+        <label>
+          Observações
+          <input id="observacoes" type="text" />
+        </label>
+        <div class="row space-between">
+          <a class="ghost" href="/api/baixar">Baixar Excel</a>
+          <button id="salvarBtn" class="primary">Salvar na planilha</button>
+        </div>
+      </section>
+
+      <section class="card">
+        <h2>Importar dados de planilha antiga</h2>
+        <p class="hint">
+          Selecione um .xlsx com contatos anteriores — a IA mapeia as colunas automaticamente.
+        </p>
+        <div class="row">
+          <input id="arquivoInput" type="file" accept=".xlsx" />
+          <button id="importarBtn" class="ghost">Importar planilha</button>
+        </div>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <div class="container footer-content">
+        <span id="statusMessage">Pronto.</span>
+        <span id="contador"></span>
+      </div>
+    </footer>
+
+    <script>
+      window.APP_CONFIG = {
+        fontes: {{ fontes | tojson }},
+        statuses: {{ statuses | tojson }},
+      };
+    </script>
+    <script src="{{ url_for('static', filename='app.js') }}"></script>
+  </body>
+</html>

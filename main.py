@@ -1,4 +1,6 @@
+import os
 import sys
+from pathlib import Path
 
 if sys.version_info < (3, 8):
     print(
@@ -8,9 +10,12 @@ if sys.version_info < (3, 8):
     )
     sys.exit(1)
 
-sys.path.insert(0, "src")
-from app import AnhangaRadar
+sys.path.insert(0, str(Path(__file__).parent / "src"))
+from web_app import create_app
 
 if __name__ == "__main__":
-    app = AnhangaRadar()
-    app.mainloop()
+    app = create_app()
+    host = os.environ.get("HOST", "0.0.0.0")
+    port = int(os.environ.get("PORT", "8000"))
+    debug = os.environ.get("FLASK_DEBUG") == "1"
+    app.run(host=host, port=port, debug=debug)
