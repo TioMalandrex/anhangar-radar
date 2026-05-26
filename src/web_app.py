@@ -6,7 +6,7 @@ from typing import Optional, Union
 from flask import Flask, current_app, jsonify, render_template, request, send_file
 
 import config
-from excel_manager import adicionar_linha, contar_registros_hoje, garantir_excel
+from excel_manager import ABAS as EXCEL_ABAS, adicionar_linha, contar_registros_hoje, garantir_excel
 from ia_processor import extrair_dados
 from importador import importar_planilha
 
@@ -14,6 +14,10 @@ ROOT = Path(__file__).parent.parent
 DEFAULT_EXCEL_PATH = ROOT / "data" / "contatos.xlsx"
 
 FONTES = ["Ligação", "WhatsApp", "E-mail", "Visita", "Outro"]
+ABAS = {
+    "falhas": EXCEL_ABAS[0],
+    "semInteresse": EXCEL_ABAS[1],
+}
 STATUSES = [
     "Sem resposta",
     "Não atendida",
@@ -27,9 +31,9 @@ STATUSES = [
 
 def _aba_para_status(status: str) -> str:
     s = status.lower()
-    if any(k in s for k in ["interesse", "recusou"]):
-        return "Sem Interesse"
-    return "Falhas e Sem Contato"
+    if "sem interesse" in s:
+        return ABAS["semInteresse"]
+    return ABAS["falhas"]
 
 
 def _resolve_api_key(payload=None, form=None) -> str:
@@ -75,7 +79,12 @@ def create_app(excel_path: Optional[Union[Path, str]] = None) -> Flask:
 
     @app.get("/")
     def index():
-        return render_template("index.html", fontes=FONTES, statuses=STATUSES)
+        return render_template(
+            "index.html",
+            fontes=FONTES,
+            statuses=STATUSES,
+            abas=ABAS,
+        )
 
     @app.get("/api/contador")
     def contador():
@@ -120,7 +129,7 @@ def create_app(excel_path: Optional[Union[Path, str]] = None) -> Flask:
 
         try:
             adicionar_linha(str(_excel_path()), dados)
-        except PermissionError as exc:
+        except PermissionError:
             return jsonify(
                 error="O arquivo 'contatos.xlsx' está aberto em outro programa. "
                 "Feche o Excel e tente novamente."
@@ -164,8 +173,11 @@ def create_app(excel_path: Optional[Union[Path, str]] = None) -> Flask:
                 os.unlink(temp_path)
 
         contador_atual = contar_registros_hoje(str(_excel_path()))
+        mensagem = f"✓ {importados} registro(s) importado(s) com sucesso."
+        if erros:
+            mensagem += f" ({len(erros)} linha(s) ignorada(s))"
         return jsonify(
-            message="✓ Importação concluída.",
+            message=mensagem,
             contador=contador_atual,
         )
 

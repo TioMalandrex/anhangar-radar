@@ -8,6 +8,7 @@ const arquivoInput = document.getElementById("arquivoInput");
 const statusMessage = document.getElementById("statusMessage");
 const contadorEl = document.getElementById("contador");
 const abaLabel = document.getElementById("abaLabel");
+const abas = window.APP_CONFIG.abas;
 
 const campos = {
   nome: document.getElementById("nome"),
@@ -42,11 +43,11 @@ async function atualizarContador() {
 }
 
 function abaPorStatus(status) {
-  const valor = (status || "").toLowerCase();
-  if (valor.includes("interesse") || valor.includes("recusou")) {
-    return 'Sem Interesse';
+  const statusLower = (status || "").toLowerCase();
+  if (statusLower.includes("sem interesse")) {
+    return abas.semInteresse;
   }
-  return 'Falhas e Sem Contato';
+  return abas.falhas;
 }
 
 function atualizarAba() {

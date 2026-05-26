@@ -78,6 +78,18 @@ python main.py
 
 ---
 
+## Deploy no Coolify (Nixpacks)
+
+1. Crie um novo serviço no Coolify apontando para este repositório.
+2. Selecione **Nixpacks** como builder (sem Docker).
+3. Configure as variáveis de ambiente:
+   - `GROQ_API_KEY` (obrigatória)
+   - `HOST=0.0.0.0` (opcional, recomendado)
+   - `PORT` será definido pelo Coolify automaticamente
+4. Faça o deploy. O start command já está definido em `nixpacks.toml`.
+
+---
+
 ## Exemplos de frases
 
 Cole qualquer descrição em linguagem natural no campo de texto. A IA entende variações:
